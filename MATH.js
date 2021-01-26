@@ -66,6 +66,14 @@ class MATRIX{
         this.matrix = result;
     }
 
+    sigmoid(){
+        for(let r = 0; r < this.rowNum; r++){
+            for(let c = 0; c < this.columnNum; c++){
+                this.matrix[r][c] = 1 / ( 1 + Math.exp(-this.matrix[r][c]));
+            }
+        }
+    }
+
     /**
      * @returns {number}
      */

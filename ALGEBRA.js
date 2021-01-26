@@ -5,7 +5,7 @@
  * @returns {MATRIX}
  */
 function dot(matrix0, matrix1){
-    if(matrix0.columnNum !== matrix1.rowNum) throw("matrix0 columnNum must be equal matrix1 rowNum to dot product!");
+    //if(matrix0.columnNum !== matrix1.rowNum) throw("matrix0 columnNum must be equal matrix1 rowNum to dot product!");
     let result = new MATRIX(matrix0.rowNum, matrix1.columnNum);
     for (let r = 0; r < result.rowNum; r++) {
         for (let c = 0; c < result.columnNum; c++) {
@@ -40,4 +40,8 @@ function matrixFromArray(rowNum, columnNum, array){
     let matrix = new MATRIX(rowNum, columnNum);
     matrix.buildFromArray(array);
     return matrix;
+}
+
+function getRandom(number){
+    return Math.floor(Math.random() * number);
 }
