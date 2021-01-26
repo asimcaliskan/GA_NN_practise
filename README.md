@@ -1,2 +1,2 @@
 # GA_NN_practise
-Genetic algorithm with neural network.
+Genetic algorithm with neural networks.
