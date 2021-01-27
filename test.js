@@ -42,6 +42,20 @@ function testIndividuals(testCase){
     result.sort((a,b) => a[1] - b[1]);
     return result;
 }
+let forwardCollisionVector0 = this.vector_addition(this.vector_rotate(this.direction_vector(30), this.deg_to_rad(this.angle)), center);
+let forwardCollisionVector1 = this.vector_addition(this.vector_rotate(this.direction_vector(50), this.deg_to_rad(this.angle)), center);
+let left_vector  = this.vector_addition(this.vector_rotate(this.direction_vector(29), this.deg_to_rad(this.angle - 90)), center);
+let right_vector = this.vector_addition(this.vector_rotate(this.direction_vector(29), this.deg_to_rad(this.angle + 90)), center);
+let frontCollisionVectorLeft  = this.vector_addition(this.vector_rotate(this.direction_vector(30), this.deg_to_rad(this.angle - 30)), center);
+let frontCollisionVectorRight = this.vector_addition(this.vector_rotate(this.direction_vector(30), this.deg_to_rad(this.angle + 30)), center);
+
+let forwardCollision0 = isEqual(this.getPixelColor(forwardCollisionVector0[0], forwardCollisionVector0[1]), [0, 0, 0, 255]);
+let forwardCollision1 = isEqual(this.getPixelColor(forwardCollisionVector1[0], forwardCollisionVector1[1]), [0, 0, 0, 255]);
+let sideCollisionLeft  = isEqual(this.getPixelColor(left_vector[0], left_vector[1]), [0, 0, 0, 255]);
+let sideCollisionRight = isEqual(this.getPixelColor(right_vector[0], right_vector[1]), [0, 0, 0, 255]);
+let frontCollisionLeft  = isEqual(this.getPixelColor(frontCollisionVectorLeft[0], frontCollisionVectorLeft[1]), [0, 0, 0, 255]);
+let frontCollisionRight = isEqual(this.getPixelColor(frontCollisionVectorRight[0], frontCollisionVectorRight[1]), [0, 0, 0, 255]);
+
 
 function createChromosomes(){
     for(let ind = 0; ind < NUMBER_OF_INDIVIDUALS; ind++){

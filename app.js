@@ -1,12 +1,16 @@
 let canvas, context2d, algorithm_info, speed;
 const NUMBER_OF_POPULATION = 20;
-const NETWORK_SHAPE = [3, 4, 2];
-const NUMBER_OF_ELITES = 4;
-const NUMBER_OF_MUTATION = 4;
+const NETWORK_SHAPE = [7, 10, 2];
+const NUMBER_OF_ELITES = 2;
+const NUMBER_OF_MUTATION = 20;
 let FINISHED_CARS = 0;
 
 let nns = [], cars = [];
 let GENERATION = 0;
+
+//TO TEST GET PIXEL
+let mouse;
+//...
 
 function init(){
     canvas = document.getElementById("canvas");
@@ -14,6 +18,7 @@ function init(){
     canvas.height = window.innerHeight;
     context2d = canvas.getContext("2d");
 
+    //canvas.addEventListener("mousemove", mouseMoveHandler, false);
     algorithm_info = document.getElementById("algorithm_info");
     speed = document.getElementById("speed");
 
@@ -25,7 +30,7 @@ function init(){
 
 function testLoop(){
     clearCanvas();
-    algorithm_info.textContent = "GENERATION = " + GENERATION + " SPEED = " + speed.value + " #FINISHED = " + FINISHED_CARS;
+    algorithm_info.textContent = "GENERATION = " + GENERATION + " SPEED = " + speed.value + " #FINISHED %= " + FINISHED_CARS / NUMBER_OF_POPULATION;
     SPEED_OF_CAR = speed.value;
     if(all_cars_hit()){
         GENERATION += 1;
@@ -47,6 +52,16 @@ function mutate(){
 }
  */
 
+function mouseMoveHandler(event){
+    let canvasRect = canvas.getBoundingClientRect();
+    let x = event.pageX - canvasRect.x;
+    let y = event.pageY - canvasRect.y;
+    let rgb = context2d.getImageData(x, y, 100, 100).data;
+    console.log(rgb[0], rgb[1], rgb[2], rgb[3]);
+    //console.log(canvasRect);
+}
+
+
 function crossover(resultOfTest){
     for(let ind = NUMBER_OF_ELITES; ind < NUMBER_OF_POPULATION; ind++){
         let randomElite0 = resultOfTest[getRandom(NUMBER_OF_ELITES)][0];
@@ -59,7 +74,8 @@ function crossover(resultOfTest){
 }
 
 function crossoverGenes(chromosome0, chromosome1){
-    let crossoverPoint = Math.floor(Math.random() * chromosome0.length);
+    //let crossoverPoint = Math.floor(Math.random() * chromosome0.length);
+    let crossoverPoint = Math.floor(chromosome0.length / 2);
     let resultChromosome = [];
     resultChromosome = resultChromosome.concat(chromosome0.slice(0, crossoverPoint));
     resultChromosome = resultChromosome.concat(chromosome1.slice(crossoverPoint, chromosome0.length));
@@ -98,13 +114,14 @@ function createChromosomes(){
 //BE SURE !: Firstly initialize chromosomes(nns)
 function createCars(){
     for(let ind = 0; ind < NUMBER_OF_POPULATION; ind++){
-        cars[cars.length] = new CAR(0, 240 , 40 , 20, "red", context2d, [0, 200, canvas.width, 100], nns[ind]);
+        cars[cars.length] = new CAR(0, 240 /*+ getRandom(100)*/ , 40 , 20, "red", context2d, [0, 200, canvas.width, 100], nns[ind]);
     }
 }
 
 function drawRoad(){
     draw_finish_line("green");
     draw_road_line("black");
+    drawBarrier("black");
 }
 
 function draw_finish_line(color){
@@ -116,5 +133,15 @@ function draw_road_line(color){
     context2d.fillStyle = color;
     context2d.fillRect(0, 180, canvas.width, 20);
     context2d.fillRect(0, 300, canvas.width, 20);
+}
+
+function drawBarrier(color){
+    context2d.fillStyle = color;
+    context2d.fillRect(300, 260, 20, 40);
+    context2d.fillRect(600, 200, 20, 40);
+    context2d.fillRect(900, 260, 20, 40);
+    context2d.fillRect(1200, 200, 20, 40);
+    context2d.fillRect(1400, 260, 20, 40);
+    context2d.fillRect(1600, 200, 20, 40);
 }
 

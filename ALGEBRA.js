@@ -42,6 +42,18 @@ function matrixFromArray(rowNum, columnNum, array){
     return matrix;
 }
 
+/**
+ *
+ * @param {number[]} arr0
+ * @param {number[]} arr1
+ * @returns {boolean}
+ */
+function isEqual(arr0, arr1){
+    if(arr0.length !== arr1.length) return false;
+    for(let i = 0; i < arr0.length; i++) {if(arr0[i] !== arr1[i]) return false;}
+    return true;
+}
+
 function getRandom(number){
     return Math.floor(Math.random() * number);
 }

@@ -1,5 +1,5 @@
 let SPEED_OF_CAR = 1;
-let ROTATE_ANGLE_OF_CAR = 0.5;
+let ROTATE_ANGLE_OF_CAR = 1.5;
 let MAX_ROTATE_ANGLE = 90;
 class CAR {
     /**
@@ -61,9 +61,9 @@ class CAR {
      */
     move(){
         if(!this.hit) {
-            let rotate_direction = this.nn.forward(matrixFromArray(3, 1, this.calculate_distances())).getMaxElementIndex()[0];
-            this.rotate(rotate_direction === 1 ? ROTATE_ANGLE_OF_CAR : - ROTATE_ANGLE_OF_CAR);
-            this.collision_detector();
+            let rotate_direction = this.nn.forward(matrixFromArray(NETWORK_SHAPE[0], 1, this.calculate_distances())).getMaxElementIndex()[0];
+            this.rotate(rotate_direction === 0 ? ROTATE_ANGLE_OF_CAR : - ROTATE_ANGLE_OF_CAR);
+            this.collisionDetectorWithColor();
             let move_vector = this.vector_rotate(this.direction_vector(), this.deg_to_rad(this.angle));
             this.x += move_vector[0];
             this.y += move_vector[1];
@@ -83,9 +83,9 @@ class CAR {
      * returns direction vector (0, 0)----->(SPEED_OF_CAR, 0)
      * @returns {number[]}
      */
-    direction_vector(){
-        if(SPEED_OF_CAR <= 0) throw("speed of car must be > 0");
-        return [SPEED_OF_CAR, 0];
+    direction_vector(speed = SPEED_OF_CAR){
+        if(speed <= 0) throw("speed of car must be > 0");
+        return [speed, 0];
     }
 
     /**
@@ -101,7 +101,7 @@ class CAR {
            | sinT   cosT | |y|
          */
         return[vector[0] * Math.cos(angle) - vector[1] * Math.sin(angle),
-            vector[0] * Math.sin(angle) + vector[1] * Math.cos(angle)];
+               vector[0] * Math.sin(angle) + vector[1] * Math.cos(angle)];
     }
 
     /**
@@ -111,6 +111,17 @@ class CAR {
      */
     deg_to_rad(degree){
         return degree * Math.PI / 180;
+    }
+
+    /**
+     * @param x
+     * @param y
+     * @returns {number[]} r g b a
+     */
+    getPixelColor(x, y){
+        x = Math.floor(x); y = Math.floor(y);
+        let data = this.canvas_2d.getImageData(x, y, 1, 1).data;
+        return [data[0], data[1], data[2], data[3]];
     }
 
     /**
@@ -127,13 +138,46 @@ class CAR {
     }
 
 
+    collisionDetectorWithColor(){
+        /*
+            *-----*
+            | car |     Corner of the car can collide.
+            *-----*
+         */
+        //Calculates corners' position
+        let center = this.center_of_car();
+        let left_back   = [-this.width / 2, -this.height / 2];
+        let left_front  = [ this.width / 2, -this.height / 2];
+        let right_back  = [-this.width / 2,  this.height / 2];
+        let right_front = [ this.width / 2,  this.height / 2];
+
+        left_back   = this.vector_rotate(left_back, this.deg_to_rad(this.angle));
+        left_front  = this.vector_rotate(left_front, this.deg_to_rad(this.angle));
+        right_back  = this.vector_rotate(right_back, this.deg_to_rad(this.angle));
+        right_front = this.vector_rotate(right_front, this.deg_to_rad(this.angle));
+
+        //positions on canvas(left up => (0, 0))
+        left_back   = this.vector_addition(left_back, center);
+        left_front  = this.vector_addition(left_front, center);
+        right_back  = this.vector_addition(right_back, center);
+        right_front = this.vector_addition(right_front, center);
+
+        if(isEqual(this.getPixelColor(left_back[0], left_back[1]), [0, 0, 0, 255]))     this.hit = true;//for road line
+        if(isEqual(this.getPixelColor(left_front[0], left_front[1]), [0, 0, 0, 255]))   this.hit = true;//for road line
+        if(isEqual([0, 0, 0, 255], this.getPixelColor(right_front[0], right_front[1]))) this.hit = true;//for road line
+        if(isEqual(this.getPixelColor(right_back[0], right_back[1]), [0, 0, 0, 255]))   this.hit = true;//for road line
+        if(isEqual(this.getPixelColor(left_front[0], left_front[1]), [0, 128, 0, 255]))   this.hit = true;//for finish line
+        if(isEqual([0, 128, 0, 255], this.getPixelColor(right_front[0], right_front[1]))) this.hit = true;//for finish line
+
+    }
+    /**
     collision_detector() {
         /*
             *-----*
             | car |     Corner of the car can collide.
             *-----*
          */
-
+    /*
         //Calculates corners' position
         let center = this.center_of_car();
         let left_back   = [-this.width / 2, -this.height / 2];
@@ -159,6 +203,7 @@ class CAR {
         if(this.road_rect[2] - 20 < left_front[0])                 this.hit = true;// when left_front pass finish line
         if(this.road_rect[2] - 20 < right_front[0])                this.hit = true;// when right_front pass finish line
     }
+    */
 
     /**
      * @returns {number[]} - [left_distance, right_distance]
@@ -172,13 +217,53 @@ class CAR {
                   | right_vector
          */
         let center = this.center_of_car();
-        let left_vector  = this.vector_rotate(this.direction_vector(), this.deg_to_rad(this.angle - 90));
-        let right_vector = this.vector_rotate(this.direction_vector(), this.deg_to_rad(this.angle + 90));
-        let up_y   = center[1] - this.road_rect[1];
-        let down_y = up_y - this.road_rect[3];
-        let left_distance_vector  = [(left_vector[0] / left_vector[1]) * up_y, up_y];
-        let right_distance_vector = [(right_vector[0] / right_vector[1]) * down_y, down_y];
-        return [this.vector_length(left_distance_vector), -this.vector_length(right_distance_vector), this.angle];
+        let _0 = this.vector_addition(this.vector_rotate(this.direction_vector(30), this.deg_to_rad(this.angle - 30)), center);
+        let _1 = this.vector_addition(this.vector_rotate(this.direction_vector(50), this.deg_to_rad(this.angle - 30)), center);
+        let _2 = this.vector_addition(this.vector_rotate(this.direction_vector(70), this.deg_to_rad(this.angle - 30)), center);
+        let _3 = this.vector_addition(this.vector_rotate(this.direction_vector(30), this.deg_to_rad(this.angle + 30)), center);
+        let _4 = this.vector_addition(this.vector_rotate(this.direction_vector(50), this.deg_to_rad(this.angle + 30)), center);
+        let _5 = this.vector_addition(this.vector_rotate(this.direction_vector(70), this.deg_to_rad(this.angle + 30)), center);
+        //let _6 = this.vector_addition(this.vector_rotate(this.direction_vector(90), this.deg_to_rad(this.angle + 20)), center);
+
+        let _00 = isEqual(this.getPixelColor(_0[0], _0[1]), [0, 0, 0, 255]);
+        let _11 = isEqual(this.getPixelColor(_1[0], _1[1]), [0, 0, 0, 255]);
+        let _22 = isEqual(this.getPixelColor(_2[0], _2[1]), [0, 0, 0, 255]);
+        let _33 = isEqual(this.getPixelColor(_3[0], _3[1]), [0, 0, 0, 255]);
+        let _44 = isEqual(this.getPixelColor(_4[0], _4[1]), [0, 0, 0, 255]);
+        let _55 = isEqual(this.getPixelColor(_5[0], _5[1]), [0, 0, 0, 255]);
+        //let _66 = isEqual(this.getPixelColor(_6[0], _6[1]), [0, 0, 0, 255]);
+
+        this.helper(_0[0], _0[1], 2, 2);
+        this.helper(_1[0], _1[1], 2, 2);
+        this.helper(_2[0], _2[1], 2, 2);
+        this.helper(_3[0], _3[1], 2, 2);
+        this.helper(_4[0], _4[1], 2, 2);
+        this.helper(_5[0], _5[1], 2, 2);
+        //this.helper(_p60[0], _p60[1], 2, 2);
+        //this.helper(_n60[0], _n60[1], 2, 2);
+
+        //this.helper(forwardCollisionVector0[0], forwardCollisionVector0[1], 2, 2);
+        //if(forwardCollision0 && forwardCollision1) console.log("HIT")
+        return [
+            _00 ? -30 : 30,
+            _11 ? -20 : 20,
+            _22 ? -10 : 10,
+            _33 ? -30 : 30,
+            _44 ? -20 : 20,
+            _55 ? -10 : 10,
+            this.angle];
+    }
+
+    /**
+     * draw rect to help :)
+     * @param {number} x
+     * @param {number} y
+     * @param {number} w
+     * @param {number} h
+     */
+    helper(x, y, w, h){
+        this.canvas_2d.fillStyle = "green";
+        this.canvas_2d.fillRect(x, y, w, h);
     }
 
     /**

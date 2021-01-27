@@ -50,7 +50,7 @@ class NN{
         let result = vector;
         for(let layer = 0; layer < this.numberOfLayer - 1; layer++){
             result = dot(this.weights[layer], result);
-            result.sigmoid();
+            //result.sigmoid();
         }
         return result;
     }
