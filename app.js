@@ -1,3 +1,6 @@
+/**
+ * @author <https://github.com/asimcaliskan>
+ */
 let canvas, context2d, algorithm_info, speed;
 const NUMBER_OF_POPULATION = 20;
 const NETWORK_SHAPE = [7, 10, 2];
